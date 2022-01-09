@@ -1,3 +1,4 @@
+from textwrap import fill
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -53,6 +54,7 @@ st.markdown(
 
 
 
+uploaded_file = st.sidebar.file_uploader("Anket verisini yükleyin",type=['xlsx'],accept_multiple_files=False,key="fileUploader")
 
 
 
@@ -68,14 +70,11 @@ def main():
     cs_text()
 
 def cs_sidebar():
-    
-    
 
     return None
 
 st.title('Türkiye Raporu - Anket Verisi Ağırlıklandırma')
 
-uploaded_file = st.sidebar.file_uploader("Anket verisini yükleyin",type=['xlsx'],accept_multiple_files=False,key="fileUploader")
 
 def cs_main_calc():
 
@@ -129,6 +128,8 @@ def cs_main_calc():
                                         'Yüksek lisans': 'Üniversite veya daha fazla',
                                         'Doktora': 'Üniversite veya daha fazla',
                                         })
+
+
 
         #burada agirliklandirma icin kullanacagimiz birlestirilmis egitim gruplarini olusturuyorum
 
@@ -231,7 +232,7 @@ def cs_main_calc():
         st.bar_chart(sex_dist_p)
         corr_sex = df['sex_prct'].corr(df['sex_weight'])
 
-        st.markdown(f"""Örneklemin cinsiyet dağılımı ile popülasyon cinsiyet dağılımı arasındaki korelasyon {round(corr_sex,2)} olduğu için ağırlıklar **{'tutarlı' if  0.8 < corr_sex < 1.2 else "tutarsız"}** olarak değerlendirilmiştir.""", unsafe_allow_html=True)
+        st.markdown(f"""Örneklemin cinsiyet dağılımı ile popülasyon cinsiyet dağılımı arasındaki korelasyon {round(corr_sex,2)} olduğu için ağırlıklar **{'tutarlı' if  0.8 < corr_sex else "tutarsız"}** olarak değerlendirilmiştir.""", unsafe_allow_html=True)
 
         st.markdown("""---""")
 
@@ -269,7 +270,7 @@ def cs_main_calc():
 
         corr_educ = df['educ_realprct'].corr(df['educ_weight'])
 
-        st.markdown(f"""Örneklemin eğitim dağılımı ile popülasyon eğitim dağılımı arasındaki korelasyon {round(corr_educ,2)} olduğu için ağırlıklar **{'tutarlı' if  0.8 < corr_educ < 1.2 else "tutarsız"}** olarak değerlendirilmiştir.""", unsafe_allow_html=True)
+        st.markdown(f"""Örneklemin eğitim dağılımı ile popülasyon eğitim dağılımı arasındaki korelasyon {round(corr_educ,2)} olduğu için ağırlıklar **{'tutarlı' if  0.8 < corr_educ else "tutarsız"}** olarak değerlendirilmiştir.""", unsafe_allow_html=True)
 
 
         st.markdown("""---""")
@@ -293,7 +294,7 @@ def cs_main_calc():
 
         corr_age = df['age_prct'].corr(df['age_weight'])
 
-        st.markdown(f"""Örneklemin yaş dağılımı ile popülasyon yaş dağılımı arasındaki korelasyon {round(corr_age,2)} olduğu için ağırlıklar **{'tutarlı' if  0.8 < corr_age < 1.2 else "tutarsız"}** olarak değerlendirilmiştir.""", unsafe_allow_html=True)
+        st.markdown(f"""Örneklemin yaş dağılımı ile popülasyon yaş dağılımı arasındaki korelasyon {round(corr_age,2)} olduğu için ağırlıklar **{'tutarlı' if  0.8 < corr_age  else "tutarsız"}** olarak değerlendirilmiştir.""", unsafe_allow_html=True)
 
 
         st.markdown("""---""")
@@ -316,7 +317,7 @@ def cs_main_calc():
 
         corr_party = df['party_prct'].corr(df['party_weight'])
 
-        st.markdown(f"""Örneklemin 2018 parti tercihi dağılımı ile popülasyon arasındaki korelasyon {round(corr_party,2)} olduğu için ağırlıklar **{'tutarlı' if  0.8 < corr_party < 1.2 else "tutarsız"}** olarak değerlendirilmiştir.""", unsafe_allow_html=True)
+        st.markdown(f"""Örneklemin 2018 parti tercihi dağılımı ile popülasyon arasındaki korelasyon {round(corr_party,2)} olduğu için ağırlıklar **{'tutarlı' if  0.8 < corr_party else "tutarsız"}** olarak değerlendirilmiştir.""", unsafe_allow_html=True)
 
 
         
@@ -332,6 +333,84 @@ def cs_main_calc():
         data=csv,
         file_name='Turkiye_Raporu_Agirliklandirilmis.csv',
         mime='text/csv')
+
+        st.title('Tablo Oluşturma')
+
+        user_input = st.text_input("Soruyu kopyalayıp buraya yapıştırın.")
+
+        if user_input is not '':
+
+            genel = df.pivot_table(values='Duzeltilmis_Agirlik',
+                    index=user_input,
+                    aggfunc=np.sum,
+                    fill_value=0,
+                    margins=True,
+                    margins_name='Genel Toplam')
+
+            genel_p = round(genel*100/genel.iloc[-1,:],2).astype(str) + "%"
+
+            st.markdown("**Genel Dağılım**")
+            st.table(genel_p)
+            
+            cinsiyet = df.pivot_table(values='Duzeltilmis_Agirlik',
+                    index=user_input,
+                    columns='sex',
+                    aggfunc=np.sum,
+                    fill_value=0,
+                    margins=True,
+                    margins_name='Genel Toplam')
+
+            cinsiyet_p = round(cinsiyet*100/cinsiyet.iloc[-1,:],2).astype(str) + "%"
+
+            st.markdown("**Cinsiyet Dağılımı**")
+            st.table(cinsiyet_p)
+
+            yas = df.pivot_table(values='Duzeltilmis_Agirlik',
+                    index=user_input,
+                    columns='age',
+                    aggfunc=np.sum,
+                    fill_value=0,
+                    margins=True,
+                    margins_name='Genel Toplam')
+
+            yas_p = round(yas*100/yas.iloc[-1,:],2).astype(str) + "%"
+
+            st.markdown("**Yaş Dağılımı**")
+            st.table(yas_p)
+
+            parti = round(df[(df['2018_party'] == 'Adalet ve Kalkınma Partisi (AKP)') + (df['2018_party'] == 'Cumhuriyet Halk Partisi (CHP)')+ (df['2018_party'] == 'Halkların Demokratik Partisi (HDP)')+ (df['2018_party'] == 'İYİ Parti')+ (df['2018_party'] == 'Milliyetçi Hareket Partisi (MHP)')].pivot_table(values='Duzeltilmis_Agirlik',
+                    index=user_input,
+                    columns='2018_party',
+                    aggfunc=np.sum,
+                    fill_value=0,
+                    margins=True,
+                    margins_name='Genel Toplam'),2)
+
+            parti_p = round(parti*100/parti.iloc[-1,:],2).astype(str) + "%"
+
+            st.markdown("**Parti Dağılımı**")
+            st.table(parti_p)
+            
+            egitim = df.pivot_table(values='Duzeltilmis_Agirlik',
+                    index=user_input,
+                    columns='educ_real',
+                    aggfunc=np.sum,
+                    fill_value=0,
+                    margins=True,
+                    margins_name='Genel Toplam')
+
+            egitim_p = round(egitim*100/egitim.iloc[-1,:],2).astype(str) + "%"
+
+            egitim_list = ['İlköğretim veya daha az','Ortaokul','Lise','Üniversite veya daha fazla']
+
+            egitim_p = egitim_p.reindex(egitim_list,axis=1)
+
+            st.markdown("**Eğitim Dağılımı**")
+            st.table(egitim_p)
+
+        else:
+
+            st.write('Excel dosyasında bulunan sorulardan incelemek istediğinizi kopyalayıp yapıştırınız')
 
     
 

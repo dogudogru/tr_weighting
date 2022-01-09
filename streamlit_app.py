@@ -7,22 +7,54 @@ from streamlit.uploaded_file_manager import UploadedFile
 
 st.set_page_config(layout='wide')
 
-main_bg = "background.png"
-main_bg_ext = "png"
+#Menü gizleme
+st.markdown(""" <style>
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+</style> """, unsafe_allow_html=True)
+
 
 # st.markdown(
-#     f"""
+#     """
 #     <style>
-#     .reportview-container {{
-#         background: url(data:image/{main_bg_ext};base64,{base64.b64encode(open(main_bg, "rb").read()).decode()})
-#     }}
-#     .sidebar .sidebar-content {{
-#         background: url(data:image/{main_bg_ext};base64,{base64.b64encode(open(main_bg, "rb").read()).decode()})
-#     }}
+#     .reportview-container {
+#         background: url("bg.png");
+#         background-repeat:no-repeat;
+#         background-size: 100px
+#     }
+#    .sidebar .sidebar-content {
+#         background-image: linear-gradient(#2e7bcf,#2e7bcf);
+#         color: yellow;
+#     }
 #     </style>
 #     """,
 #     unsafe_allow_html=True
 # )
+
+main_bg = "bg.png"
+main_bg_ext = "png"
+
+st.markdown(
+    f"""
+    <style>
+    .reportview-container {{
+        background: url(data:image/{main_bg_ext};base64,{base64.b64encode(open(main_bg, "rb").read()).decode()});
+        background-repeat: no-repeat;
+        background-position: right top;
+        background-size: 300px;
+    }}
+    .sidebar.sidebar-content {{
+        background: url(data:image/{main_bg_ext};base64,{base64.b64encode(open(main_bg, "rb").read()).decode()})
+    }}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+
+
+
+
 
 @st.cache
 

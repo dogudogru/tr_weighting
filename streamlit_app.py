@@ -3,24 +3,26 @@ import pandas as pd
 import numpy as np
 import base64
 
+from streamlit.uploaded_file_manager import UploadedFile
+
 st.set_page_config(layout='wide')
 
 main_bg = "background.png"
 main_bg_ext = "png"
 
-st.markdown(
-    f"""
-    <style>
-    .reportview-container {{
-        background: url(data:image/{main_bg_ext};base64,{base64.b64encode(open(main_bg, "rb").read()).decode()})
-    }}
-    .sidebar .sidebar-content {{
-        background: url(data:image/{main_bg_ext};base64,{base64.b64encode(open(main_bg, "rb").read()).decode()})
-    }}
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+# st.markdown(
+#     f"""
+#     <style>
+#     .reportview-container {{
+#         background: url(data:image/{main_bg_ext};base64,{base64.b64encode(open(main_bg, "rb").read()).decode()})
+#     }}
+#     .sidebar .sidebar-content {{
+#         background: url(data:image/{main_bg_ext};base64,{base64.b64encode(open(main_bg, "rb").read()).decode()})
+#     }}
+#     </style>
+#     """,
+#     unsafe_allow_html=True
+# )
 
 @st.cache
 
@@ -35,15 +37,17 @@ def main():
 
 def cs_sidebar():
     
-    st.sidebar.write("Anket verisini yükleyin")
+    
 
     return None
 
-st.title('Otomatik Ağırlıklandırma')
+st.title('Türkiye Raporu - Anket Verisi Ağırlıklandırma')
+
+uploaded_file = st.sidebar.file_uploader("Anket verisini yükleyin",type=['xlsx'],accept_multiple_files=False,key="fileUploader")
 
 def cs_main_calc():
 
-    uploaded_file = st.sidebar.file_uploader("",type=['xlsx'],accept_multiple_files=False,key="fileUploader")
+    
 
     if uploaded_file is not None:
 
@@ -159,12 +163,22 @@ def cs_main_calc():
         mean_weight = df['Duzeltilmis_Agirlik'].mean()
 
         dataframe_x = pd.DataFrame({
-                '-': ["Minimum Ağırlık", "Maksimum Ağırlık", "Standart Sapma", "Ortalama Ağırlık"],
+                'Ağırlık Özeti': ["Minimum Ağırlık", "Maksimum Ağırlık", "Standart Sapma", "Ortalama Ağırlık"],
                 '': [min_weight, max_weight, std_weight, mean_weight],
             })
-        dataframe_x.set_index('-', inplace=True)
+        dataframe_x.set_index('Ağırlık Özeti')
 
-        st.write("Ağırlık özeti aşağıdaki gibidir",dataframe_x)
+        st.markdown("""---""")
+
+        st.write("Minimum ağırlık",round(min_weight,3))
+        st.write("Maksimum ağırlık",round(max_weight,3))
+        st.write("Örneklem Standart Sapması",round(std_weight,3))
+        st.write("Ortalama Ağırlık",round(mean_weight,3))
+
+        st.markdown("""---""")
+
+        st.markdown(f"""Toplam **{len(df['sex']) }** kayıttan oluşan anket verisi için gerekli ağırlıklandırma hesaplamaları yapılmıştır. Ağırlıklandırma sonucu katılımcıların dağılımları hakkındaki özeti aşağıda bulabilirsiniz.""", unsafe_allow_html=True)
+
 
         st.header("Ağırlıklandırma Özeti")
         
@@ -175,13 +189,15 @@ def cs_main_calc():
                     margins=True,
                     margins_name='Genel Toplam')
 
-        sex_dist_p = round(sex_dist_w*100/sex_dist_w.iloc[-1,:],2).astype(str) + "%"
-
+        #sex_dist_p = round(sex_dist_w*100/sex_dist_w.iloc[-1,:],2).astype(str) + "%"
+        sex_dist_p = sex_dist_w/sex_dist_w.iloc[-1,:]
         #sex_dist = pd.concat([sex_dist_w,sex_dist_p], axis=1,ignore_index=True)
-        
+        sex_dist_p= sex_dist_p.drop(sex_dist_p.tail(1).index)
         st.write("**Cinsiyet Dağılımı**")
 
-        st.write(sex_dist_p)
+        # st.write(sex_dist_p)
+        st.bar_chart(sex_dist_p)
+
 
         educ_dist_w = df.pivot_table(values='Duzeltilmis_Agirlik',
                     index='educ',
@@ -190,7 +206,9 @@ def cs_main_calc():
                     margins=True,
                     margins_name='Genel Toplam')
 
-        educ_dist_p = round(educ_dist_w*100/educ_dist_w.iloc[-1,:],2).astype(str) + "%"
+        # educ_dist_p = round(educ_dist_w*100/educ_dist_w.iloc[-1,:],2).astype(str) + "%"
+        educ_dist_p = educ_dist_w/educ_dist_w.iloc[-1,:]
+        educ_dist_p= educ_dist_p.drop(educ_dist_p.tail(1).index)
 
         educ_dist_w_2 = df.pivot_table(values='Duzeltilmis_Agirlik',
                     index='educ_real',
@@ -199,17 +217,19 @@ def cs_main_calc():
                     margins=True,
                     margins_name='Genel Toplam')
 
-        educ_dist_p_2 = round(educ_dist_w_2*100/educ_dist_w_2.iloc[-1,:],2).astype(str) + "%"
+        # educ_dist_p_2 = round(educ_dist_w_2*100/educ_dist_w_2.iloc[-1,:],2).astype(str) + "%"
+        educ_dist_p_2 = educ_dist_w_2/educ_dist_w_2.iloc[-1,:]
+        educ_dist_p_2= educ_dist_p_2.drop(educ_dist_p_2.tail(1).index)
 
         col1, col2 = st.columns(2)
 
         col1.write("**Eğitim Dağılımı**")
 
-        col1.write(educ_dist_p)
+        col1.bar_chart(educ_dist_p)
 
         col2.write("**Tablolarda Kullanılan Eğitim Grubu Dağılımı**")
 
-        col2.write(educ_dist_p_2)
+        col2.bar_chart(educ_dist_p_2)
 
 
         age_dist_w = df.pivot_table(values='Duzeltilmis_Agirlik',
@@ -219,13 +239,15 @@ def cs_main_calc():
                     margins=True,
                     margins_name='Genel Toplam')
 
-        age_dist_p = round(age_dist_w*100/age_dist_w.iloc[-1,:],2).astype(str) + "%"
+        # age_dist_p = round(age_dist_w*100/age_dist_w.iloc[-1,:],2).astype(str) + "%"
+        age_dist_p = age_dist_w/age_dist_w.iloc[-1,:]
 
+        age_dist_p= age_dist_p.drop(age_dist_p.tail(1).index)
         #sex_dist = pd.concat([sex_dist_w,sex_dist_p], axis=1,ignore_index=True)
         
         st.write("**Yaş Dağılımı**")
 
-        st.write(age_dist_p)
+        st.bar_chart(age_dist_p)
 
 
         party_dist_w = df.pivot_table(values='Duzeltilmis_Agirlik',
@@ -235,13 +257,14 @@ def cs_main_calc():
                     margins=True,
                     margins_name='Genel Toplam')
 
-        party_dist_p = round(party_dist_w*100/party_dist_w.iloc[-1,:],2).astype(str) + "%"
-
+        # party_dist_p = round(party_dist_w*100/party_dist_w.iloc[-1,:],2).astype(str) + "%"
+        party_dist_p = party_dist_w/party_dist_w.iloc[-1,:]
+        party_dist_p= party_dist_p.drop(party_dist_p.tail(1).index)
         #sex_dist = pd.concat([sex_dist_w,sex_dist_p], axis=1,ignore_index=True)
         
         st.write("**2018'de Tercih Edilen Parti Dağılımı**")
 
-        st.write(party_dist_p)
+        st.bar_chart(party_dist_p)
 
         
 
@@ -249,9 +272,9 @@ def cs_main_calc():
         #Veriyi indirmek icin
         csv = convert_df(df)
         
-
+        st.success("Ağırlıklandırılmış veriyi CSV dosyası olarak indirebilirsiniz")
         st.download_button(
-        label="Ağırlıklandırılmış veriyi CSV dosyası olarak indirebilirsiniz",
+        label="İndir",
         data=csv,
         file_name='Turkiye_Raporu_Agirliklandirilmis.csv',
         mime='text/csv')
@@ -260,6 +283,7 @@ def cs_main_calc():
 
 
     else:
+
         st.warning("Anket verisini Excel dosyası olarak yan taraftaki butondan yüklemeniz gerekir.")
 
 
@@ -268,11 +292,15 @@ def cs_main_calc():
 
 def cs_text():
 
-    st.header('Veriyi Hazırlama')
-    st.markdown('Veriyi yüklemeden önce bazı sütunların isimlerini değiştirmeniz gerekir!')
-    sampledf = pd.DataFrame({'Old':['Katılımcının cinsiyeti','Katılımcının yaş grubu (18-24 vs.)','Katılımcının eğitim seviyesi','Katılımcının 2018 seçimlerinde oy verdiği parti'], 'New':['sex','age','educ','2018_party']})
-    sampledf.set_index('Old', inplace=True)
-    st.dataframe(sampledf)
+    if uploaded_file is None:
+        st.header('Veriyi Hazırlama')
+        st.markdown('Veriyi yüklemeden önce bazı sütunların isimlerini değiştirmeniz gerekir!')
+        sampledf = pd.DataFrame({'Old':['Katılımcının cinsiyeti','Katılımcının yaş grubu (18-24 vs.)','Katılımcının eğitim seviyesi','Katılımcının 2018 seçimlerinde oy verdiği parti'], 'New':['sex','age','educ','2018_party']})
+        sampledf.set_index('Old', inplace=True)
+        st.dataframe(sampledf)
+    else:
+        st.markdown("---")
+
     return None
 
 if __name__ == '__main__':

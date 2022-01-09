@@ -50,12 +50,13 @@ def cs_main_calc():
         df = pd.read_excel(uploaded_file)
 
         df['educ_realprct'] = df['educ']
-        df['educ_real'] = df['educ']    
+        df['educ_real'] = df['educ']
+        df['2018_party_real'] = df['2018_party']   
 
         sex_pop = pd.DataFrame({'sex':['Kadın','Erkek'], 'sex_weight':[0.501716178,0.498283822]})
         age_pop = pd.DataFrame({'age':['18-24','25-34','35-44','45-54','55-64','65 ve üstü'], 'age_weight':[0.155496,0.211942377,0.210170714,0.169884995,0.129716679,0.122789]})
         educ_pop = pd.DataFrame({'educ':['Okuma-yazma bilmiyor','İlkokul terk','İlkokul mezunu','Ortaokul veya dengi meslek ortaokul mezunu','Lise ve dengi meslek okulu mezunu','Yüksekokul veya üniversite mezunu','Yüksek lisans','Doktora'], 'educ_weight':[0.276159321,0.276159321,0.276159321,0.535093254,0.535093254,0.188747425,0.188747425,0.188747425]})
-        party_pop = pd.DataFrame({'2018_party':['Adalet ve Kalkınma Partisi (AKP)','Cumhuriyet Halk Partisi (CHP)','Diğer','Halkların Demokratik Partisi (HDP)','İYİ Parti','Oy kullanmadım < 21','Oy kullanmadım > 20','Saadet Partisi','Bağımsız aday','Milliyetçi Hareket Partisi (MHP)'], 'party_weight':[0.339423,0.180605,0.004301,0.093328,0.0794286,0.08852,0.146821,0.010691,0.001203,0.088524]})
+        party_pop = pd.DataFrame({'2018_party':['Adalet ve Kalkınma Partisi (AKP)','Cumhuriyet Halk Partisi (CHP)','Diğer','Halkların Demokratik Partisi (HDP)','İYİ Parti','Milliyetçi Hareket Partisi (MHP)','Oy kullanmadım < 21','Saadet Partisi','Bağımsız aday','Oy kullanmadım > 20'], 'party_weight':[0.339423446488676,0.180605171173664,0.00430128656841585,0.0933281090097647,0.0794286628590058,0.0885248140019761,0.0556726723005184,0.0106913640821138,0.0012030069160252,0.14682146659984]})
 
         df['all'] = len(df['sex']) # Toplam katilimci sayisini belirten kolon
 
@@ -117,7 +118,7 @@ def cs_main_calc():
 
         df['total'] = df['w_sex'] * df['w_age'] * df['w_educ'] 
 
-        df['std'] = df.loc[:,"total"].std()
+        df['std'] = df.loc[:,"total"].std(ddof=1)
         df['avg'] = df.loc[:,"total"].mean()
         df['thold'] = df['std'] * 2 + df['avg']
         df = df.drop(columns=['std', 'avg'])
@@ -132,11 +133,11 @@ def cs_main_calc():
 
         # party_pivot = party_pivot.columns.get_level_values(0)
 
-        party_pivot = party_pivot.rename({'ilk_agirliklar': 'first_weight'}, axis=1)
+        party_pivot = party_pivot.rename({'ilk_agirliklar': 'first_party_weight'}, axis=1)
 
         party_pivot['all'] = df['ilk_agirliklar'].sum()
         
-        party_pivot['party_prct'] = party_pivot['first_weight']  / party_pivot['all']
+        party_pivot['party_prct'] = party_pivot['first_party_weight']  / party_pivot['all']
 
         df = df.merge(party_pivot, on='2018_party', how= 'left')
 
@@ -144,7 +145,7 @@ def cs_main_calc():
 
         df['total2'] = df['w_party'] * df['ilk_agirliklar']
 
-        df['std2'] = df.loc[:,"total2"].std()
+        df['std2'] = df.loc[:,"total2"].std(ddof=1)
         df['avg2'] = df.loc[:,"total2"].mean()
         df['thold2'] = df['std2'] * 2 + df['avg2']
         df = df.drop(columns=['std2', 'avg2'])

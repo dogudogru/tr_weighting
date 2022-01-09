@@ -267,7 +267,7 @@ def cs_main_calc():
 
         col2.bar_chart(educ_dist_p_2)
 
-        corr_educ = df['educ_prct'].corr(df['educ_weight'])
+        corr_educ = df['educ_realprct'].corr(df['educ_weight'])
 
         st.markdown(f"""Örneklemin eğitim dağılımı ile popülasyon eğitim dağılımı arasındaki korelasyon {round(corr_educ,2)} olduğu için ağırlıklar **{'tutarlı' if  0.8 < corr_educ < 1.2 else "tutarsız"}** olarak değerlendirilmiştir.""", unsafe_allow_html=True)
 

@@ -347,7 +347,7 @@ def cs_main_calc():
                     margins=True,
                     margins_name='Genel Toplam')
 
-            genel_p = round(genel*100/genel.iloc[-1,:],2).astype(str) + "%"
+            genel_p = round(genel*100/genel.iloc[-1,:],1).astype(str) + "%"
 
             st.markdown("**Genel Dağılım**")
             st.table(genel_p)
@@ -360,7 +360,7 @@ def cs_main_calc():
                     margins=True,
                     margins_name='Genel Toplam')
 
-            cinsiyet_p = round(cinsiyet*100/cinsiyet.iloc[-1,:],2).astype(str) + "%"
+            cinsiyet_p = round(cinsiyet*100/cinsiyet.iloc[-1,:],1).astype(str) + "%"
 
             st.markdown("**Cinsiyet Dağılımı**")
             st.table(cinsiyet_p)
@@ -373,7 +373,7 @@ def cs_main_calc():
                     margins=True,
                     margins_name='Genel Toplam')
 
-            yas_p = round(yas*100/yas.iloc[-1,:],2).astype(str) + "%"
+            yas_p = round(yas*100/yas.iloc[-1,:],1).astype(str) + "%"
 
             st.markdown("**Yaş Dağılımı**")
             st.table(yas_p)
@@ -386,7 +386,7 @@ def cs_main_calc():
                     margins=True,
                     margins_name='Genel Toplam'),2)
 
-            parti_p = round(parti*100/parti.iloc[-1,:],2).astype(str) + "%"
+            parti_p = round(parti*100/parti.iloc[-1,:],1).astype(str) + "%"
 
             st.markdown("**Parti Dağılımı**")
             st.table(parti_p)
@@ -399,7 +399,7 @@ def cs_main_calc():
                     margins=True,
                     margins_name='Genel Toplam')
 
-            egitim_p = round(egitim*100/egitim.iloc[-1,:],2).astype(str) + "%"
+            egitim_p = round(egitim*100/egitim.iloc[-1,:],1).astype(str) + "%"
 
             egitim_list = ['İlköğretim veya daha az','Ortaokul','Lise','Üniversite veya daha fazla']
 

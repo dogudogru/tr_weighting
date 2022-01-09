@@ -225,11 +225,15 @@ def cs_main_calc():
         sex_dist_p = sex_dist_w/sex_dist_w.iloc[-1,:]
         #sex_dist = pd.concat([sex_dist_w,sex_dist_p], axis=1,ignore_index=True)
         sex_dist_p= sex_dist_p.drop(sex_dist_p.tail(1).index)
-        st.write("**Cinsiyet Dağılımı**")
+        st.subheader("**Cinsiyet Dağılımı**")
 
         # st.write(sex_dist_p)
         st.bar_chart(sex_dist_p)
+        corr_sex = df['sex_prct'].corr(df['sex_weight'])
 
+        st.markdown(f"""Örneklemin cinsiyet dağılımı ile popülasyon cinsiyet dağılımı arasındaki korelasyon {round(corr_sex,2)} olduğu için ağırlıklar **{'tutarlı' if  0.8 < corr_sex < 1.2 else "tutarsız"}** olarak değerlendirilmiştir.""", unsafe_allow_html=True)
+
+        st.markdown("""---""")
 
         educ_dist_w = df.pivot_table(values='Duzeltilmis_Agirlik',
                     index='educ',
@@ -255,14 +259,20 @@ def cs_main_calc():
 
         col1, col2 = st.columns(2)
 
-        col1.write("**Eğitim Dağılımı**")
+        col1.subheader("**Eğitim Dağılımı**")
 
         col1.bar_chart(educ_dist_p)
 
-        col2.write("**Tablolarda Kullanılan Eğitim Grubu Dağılımı**")
+        col2.subheader("**Tablolarda Kullanılan Eğitim Grubu Dağılımı**")
 
         col2.bar_chart(educ_dist_p_2)
 
+        corr_educ = df['educ_prct'].corr(df['educ_weight'])
+
+        st.markdown(f"""Örneklemin eğitim dağılımı ile popülasyon eğitim dağılımı arasındaki korelasyon {round(corr_educ,2)} olduğu için ağırlıklar **{'tutarlı' if  0.8 < corr_educ < 1.2 else "tutarsız"}** olarak değerlendirilmiştir.""", unsafe_allow_html=True)
+
+
+        st.markdown("""---""")
 
         age_dist_w = df.pivot_table(values='Duzeltilmis_Agirlik',
                     index='age',
@@ -277,10 +287,16 @@ def cs_main_calc():
         age_dist_p= age_dist_p.drop(age_dist_p.tail(1).index)
         #sex_dist = pd.concat([sex_dist_w,sex_dist_p], axis=1,ignore_index=True)
         
-        st.write("**Yaş Dağılımı**")
+        st.subheader("**Yaş Dağılımı**")
 
         st.bar_chart(age_dist_p)
 
+        corr_age = df['age_prct'].corr(df['age_weight'])
+
+        st.markdown(f"""Örneklemin yaş dağılımı ile popülasyon yaş dağılımı arasındaki korelasyon {round(corr_age,2)} olduğu için ağırlıklar **{'tutarlı' if  0.8 < corr_age < 1.2 else "tutarsız"}** olarak değerlendirilmiştir.""", unsafe_allow_html=True)
+
+
+        st.markdown("""---""")
 
         party_dist_w = df.pivot_table(values='Duzeltilmis_Agirlik',
                     index='2018_party',
@@ -294,11 +310,17 @@ def cs_main_calc():
         party_dist_p= party_dist_p.drop(party_dist_p.tail(1).index)
         #sex_dist = pd.concat([sex_dist_w,sex_dist_p], axis=1,ignore_index=True)
         
-        st.write("**2018'de Tercih Edilen Parti Dağılımı**")
+        st.subheader("**2018'de Tercih Edilen Parti Dağılımı**")
 
         st.bar_chart(party_dist_p)
 
+        corr_party = df['party_prct'].corr(df['party_weight'])
+
+        st.markdown(f"""Örneklemin 2018 parti tercihi dağılımı ile popülasyon arasındaki korelasyon {round(corr_party,2)} olduğu için ağırlıklar **{'tutarlı' if  0.8 < corr_party < 1.2 else "tutarsız"}** olarak değerlendirilmiştir.""", unsafe_allow_html=True)
+
+
         
+        st.markdown("""---""")
 
 
         #Veriyi indirmek icin

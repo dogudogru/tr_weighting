@@ -8,11 +8,11 @@ from streamlit.uploaded_file_manager import UploadedFile
 
 st.set_page_config(layout='wide')
 
-#Menü gizleme
-st.markdown(""" <style>
-#MainMenu {visibility: hidden;}
-footer {visibility: hidden;}
-</style> """, unsafe_allow_html=True)
+# #Menü gizleme
+# st.markdown(""" <style>
+# #MainMenu {visibility: hidden;}
+# footer {visibility: hidden;}
+# </style> """, unsafe_allow_html=True)
 
 
 # st.markdown(
@@ -84,10 +84,14 @@ def cs_main_calc():
 
         df = pd.read_excel(uploaded_file)
 
-        df['educ_realprct'] = df['educ']
+        df['educ'] = df['Eğitim durumunuz nedir? TEK CEVAP (ANKETÖR DİKKAT! En son mezun olunan okul bilgisi alınmalıdır.)']
+        df['2018_party'] = df['2018 Milletvekili seçimlerinde hangi siyasi partiye oy verdiniz? TEK CEVAP   (ANKETÖR: ŞIKLARI OKUMAYINIZ, İTTİFAK YANITI GELİRSE, PARTİ SEÇİP SEÇMEDİKLERİNİ ÖZELLİKLE SORUNUZ. “SEÇMEDİM” YANITI GELİRSE 10 İLE 11 ŞIKLARINDAN UYGUN OLANI İŞARETLEYİN)']
+        df['educ_realprct'] = df['educ']        
         df['educ_real'] = df['educ']
         df['2018_party_real'] = df['2018_party']   
-
+        df['sex'] = df['Katılımcının cinsiyeti?']
+        df['age'] = df['Yaş grubu']
+        
         sex_pop = pd.DataFrame({'sex':['Kadın','Erkek'], 'sex_weight':[0.501716178,0.498283822]})
         age_pop = pd.DataFrame({'age':['18-24','25-34','35-44','45-54','55-64','65 ve üstü'], 'age_weight':[0.155496,0.211942377,0.210170714,0.169884995,0.129716679,0.122789]})
         educ_pop = pd.DataFrame({'educ':['Okuma-yazma bilmiyor','İlkokul terk','İlkokul mezunu','Ortaokul veya dengi meslek ortaokul mezunu','Lise ve dengi meslek okulu mezunu','Yüksekokul veya üniversite mezunu','Yüksek lisans','Doktora'], 'educ_weight':[0.276159321,0.276159321,0.276159321,0.535093254,0.535093254,0.188747425,0.188747425,0.188747425]})
@@ -427,10 +431,10 @@ def cs_text():
 
     if uploaded_file is None:
         st.header('Veriyi Hazırlama')
-        st.markdown('Veriyi yüklemeden önce bazı sütunların isimlerini değiştirmeniz gerekir!')
-        sampledf = pd.DataFrame({'Old':['Katılımcının cinsiyeti','Katılımcının yaş grubu (18-24 vs.)','Katılımcının eğitim seviyesi','Katılımcının 2018 seçimlerinde oy verdiği parti'], 'New':['sex','age','educ','2018_party']})
-        sampledf.set_index('Old', inplace=True)
-        st.dataframe(sampledf)
+        st.markdown('Veriyi yüklemeden önce hiçbir şey yapmanıza gerek yoktur :slightly_smiling_face: Raw datayı yükleyin!')
+        # sampledf = pd.DataFrame({'Old':['Katılımcının cinsiyeti','Katılımcının yaş grubu (18-24 vs.)','Katılımcının eğitim seviyesi','Katılımcının 2018 seçimlerinde oy verdiği parti'], 'New':['sex','age','educ','2018_party']})
+        # sampledf.set_index('Old', inplace=True)
+        # st.dataframe(sampledf)
     else:
         st.markdown("---")
 

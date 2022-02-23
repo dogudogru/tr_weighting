@@ -1,3 +1,4 @@
+from socketserver import DatagramRequestHandler
 from textwrap import fill
 import streamlit as st
 import pandas as pd
@@ -59,7 +60,6 @@ uploaded_file = st.sidebar.file_uploader("Anket verisini yükleyin",type=['xlsx'
 
 
 @st.cache
-
 def convert_df(df):
 
      return df.to_csv().encode('utf-8')
@@ -193,6 +193,7 @@ def cs_main_calc():
 
         calc2 = np.where(df['total2'] > df['thold2'], df['thold2'], df['total2'])
         df['Duzeltilmis_Agirlik'] = calc2
+        df_temp = df.iloc[:, 23:]
 
         min_weight = df['Duzeltilmis_Agirlik'].min()
         max_weight = df['Duzeltilmis_Agirlik'].max()
@@ -216,112 +217,112 @@ def cs_main_calc():
 
         st.markdown(f"""Toplam **{len(df['sex']) }** kayıttan oluşan anket verisi için gerekli ağırlıklandırma hesaplamaları yapılmıştır. Ağırlıklandırma sonucu katılımcıların dağılımları hakkındaki özeti aşağıda bulabilirsiniz.""", unsafe_allow_html=True)
 
-
-        st.header("Ağırlıklandırma Özeti")
+        with st.expander("Ağırlıklandırma Özeti 👉"):
+            st.header("Özet")
         
-        sex_dist_w = df.pivot_table(values='Duzeltilmis_Agirlik',
-                    index='sex',
-                    aggfunc=np.sum,
-                    fill_value=0,
-                    margins=True,
-                    margins_name='Genel Toplam')
+            sex_dist_w = df.pivot_table(values='Duzeltilmis_Agirlik',
+                        index='sex',
+                        aggfunc=np.sum,
+                        fill_value=0,
+                        margins=True,
+                        margins_name='Genel Toplam')
 
-        #sex_dist_p = round(sex_dist_w*100/sex_dist_w.iloc[-1,:],2).astype(str) + "%"
-        sex_dist_p = sex_dist_w/sex_dist_w.iloc[-1,:]
-        #sex_dist = pd.concat([sex_dist_w,sex_dist_p], axis=1,ignore_index=True)
-        sex_dist_p= sex_dist_p.drop(sex_dist_p.tail(1).index)
-        st.subheader("**Cinsiyet Dağılımı**")
+            #sex_dist_p = round(sex_dist_w*100/sex_dist_w.iloc[-1,:],2).astype(str) + "%"
+            sex_dist_p = sex_dist_w/sex_dist_w.iloc[-1,:]
+            #sex_dist = pd.concat([sex_dist_w,sex_dist_p], axis=1,ignore_index=True)
+            sex_dist_p= sex_dist_p.drop(sex_dist_p.tail(1).index)
+            st.subheader("**Cinsiyet Dağılımı**")
 
-        # st.write(sex_dist_p)
-        st.bar_chart(sex_dist_p)
-        corr_sex = df['sex_prct'].corr(df['sex_weight'])
+            # st.write(sex_dist_p)
+            st.bar_chart(sex_dist_p)
+            corr_sex = df['sex_prct'].corr(df['sex_weight'])
 
-        st.markdown(f"""Örneklemin cinsiyet dağılımı ile popülasyon cinsiyet dağılımı arasındaki korelasyon {round(corr_sex,2)} olduğu için ağırlıklar **{'tutarlı' if  0.8 < corr_sex else "tutarsız"}** olarak değerlendirilmiştir.""", unsafe_allow_html=True)
+            st.markdown(f"""Örneklemin cinsiyet dağılımı ile popülasyon cinsiyet dağılımı arasındaki korelasyon {round(corr_sex,2)} olduğu için ağırlıklar **{'tutarlı' if  0.8 < corr_sex else "tutarsız"}** olarak değerlendirilmiştir.""", unsafe_allow_html=True)
 
-        st.markdown("""---""")
+            st.markdown("""---""")
 
-        educ_dist_w = df.pivot_table(values='Duzeltilmis_Agirlik',
-                    index='educ',
-                    aggfunc=np.sum,
-                    fill_value=0,
-                    margins=True,
-                    margins_name='Genel Toplam')
+            educ_dist_w = df.pivot_table(values='Duzeltilmis_Agirlik',
+                        index='educ',
+                        aggfunc=np.sum,
+                        fill_value=0,
+                        margins=True,
+                        margins_name='Genel Toplam')
 
-        # educ_dist_p = round(educ_dist_w*100/educ_dist_w.iloc[-1,:],2).astype(str) + "%"
-        educ_dist_p = educ_dist_w/educ_dist_w.iloc[-1,:]
-        educ_dist_p= educ_dist_p.drop(educ_dist_p.tail(1).index)
+            # educ_dist_p = round(educ_dist_w*100/educ_dist_w.iloc[-1,:],2).astype(str) + "%"
+            educ_dist_p = educ_dist_w/educ_dist_w.iloc[-1,:]
+            educ_dist_p= educ_dist_p.drop(educ_dist_p.tail(1).index)
 
-        educ_dist_w_2 = df.pivot_table(values='Duzeltilmis_Agirlik',
-                    index='educ_real',
-                    aggfunc=np.sum,
-                    fill_value=0,
-                    margins=True,
-                    margins_name='Genel Toplam')
+            educ_dist_w_2 = df.pivot_table(values='Duzeltilmis_Agirlik',
+                        index='educ_real',
+                        aggfunc=np.sum,
+                        fill_value=0,
+                        margins=True,
+                        margins_name='Genel Toplam')
 
-        # educ_dist_p_2 = round(educ_dist_w_2*100/educ_dist_w_2.iloc[-1,:],2).astype(str) + "%"
-        educ_dist_p_2 = educ_dist_w_2/educ_dist_w_2.iloc[-1,:]
-        educ_dist_p_2= educ_dist_p_2.drop(educ_dist_p_2.tail(1).index)
+            # educ_dist_p_2 = round(educ_dist_w_2*100/educ_dist_w_2.iloc[-1,:],2).astype(str) + "%"
+            educ_dist_p_2 = educ_dist_w_2/educ_dist_w_2.iloc[-1,:]
+            educ_dist_p_2= educ_dist_p_2.drop(educ_dist_p_2.tail(1).index)
 
-        col1, col2 = st.columns(2)
+            col1, col2 = st.columns(2)
 
-        col1.subheader("**Eğitim Dağılımı**")
+            col1.subheader("**Eğitim Dağılımı**")
 
-        col1.bar_chart(educ_dist_p)
+            col1.bar_chart(educ_dist_p)
 
-        col2.subheader("**Tablolarda Kullanılan Eğitim Grubu Dağılımı**")
+            col2.subheader("**Tablolarda Kullanılan Eğitim Grubu Dağılımı**")
 
-        col2.bar_chart(educ_dist_p_2)
+            col2.bar_chart(educ_dist_p_2)
 
-        corr_educ = df['educ_realprct'].corr(df['educ_weight'])
+            corr_educ = df['educ_realprct'].corr(df['educ_weight'])
 
-        st.markdown(f"""Örneklemin eğitim dağılımı ile popülasyon eğitim dağılımı arasındaki korelasyon {round(corr_educ,2)} olduğu için ağırlıklar **{'tutarlı' if  0.8 < corr_educ else "tutarsız"}** olarak değerlendirilmiştir.""", unsafe_allow_html=True)
-
-
-        st.markdown("""---""")
-
-        age_dist_w = df.pivot_table(values='Duzeltilmis_Agirlik',
-                    index='age',
-                    aggfunc=np.sum,
-                    fill_value=0,
-                    margins=True,
-                    margins_name='Genel Toplam')
-
-        # age_dist_p = round(age_dist_w*100/age_dist_w.iloc[-1,:],2).astype(str) + "%"
-        age_dist_p = age_dist_w/age_dist_w.iloc[-1,:]
-
-        age_dist_p= age_dist_p.drop(age_dist_p.tail(1).index)
-        #sex_dist = pd.concat([sex_dist_w,sex_dist_p], axis=1,ignore_index=True)
-        
-        st.subheader("**Yaş Dağılımı**")
-
-        st.bar_chart(age_dist_p)
-
-        corr_age = df['age_prct'].corr(df['age_weight'])
-
-        st.markdown(f"""Örneklemin yaş dağılımı ile popülasyon yaş dağılımı arasındaki korelasyon {round(corr_age,2)} olduğu için ağırlıklar **{'tutarlı' if  0.8 < corr_age  else "tutarsız"}** olarak değerlendirilmiştir.""", unsafe_allow_html=True)
+            st.markdown(f"""Örneklemin eğitim dağılımı ile popülasyon eğitim dağılımı arasındaki korelasyon {round(corr_educ,2)} olduğu için ağırlıklar **{'tutarlı' if  0.8 < corr_educ else "tutarsız"}** olarak değerlendirilmiştir.""", unsafe_allow_html=True)
 
 
-        st.markdown("""---""")
+            st.markdown("""---""")
 
-        party_dist_w = df.pivot_table(values='Duzeltilmis_Agirlik',
-                    index='2018_party',
-                    aggfunc=np.sum,
-                    fill_value=0,
-                    margins=True,
-                    margins_name='Genel Toplam')
+            age_dist_w = df.pivot_table(values='Duzeltilmis_Agirlik',
+                        index='age',
+                        aggfunc=np.sum,
+                        fill_value=0,
+                        margins=True,
+                        margins_name='Genel Toplam')
 
-        # party_dist_p = round(party_dist_w*100/party_dist_w.iloc[-1,:],2).astype(str) + "%"
-        party_dist_p = party_dist_w/party_dist_w.iloc[-1,:]
-        party_dist_p= party_dist_p.drop(party_dist_p.tail(1).index)
-        #sex_dist = pd.concat([sex_dist_w,sex_dist_p], axis=1,ignore_index=True)
-        
-        st.subheader("**2018'de Tercih Edilen Parti Dağılımı**")
+            # age_dist_p = round(age_dist_w*100/age_dist_w.iloc[-1,:],2).astype(str) + "%"
+            age_dist_p = age_dist_w/age_dist_w.iloc[-1,:]
 
-        st.bar_chart(party_dist_p)
+            age_dist_p= age_dist_p.drop(age_dist_p.tail(1).index)
+            #sex_dist = pd.concat([sex_dist_w,sex_dist_p], axis=1,ignore_index=True)
+            
+            st.subheader("**Yaş Dağılımı**")
 
-        corr_party = df['party_prct'].corr(df['party_weight'])
+            st.bar_chart(age_dist_p)
 
-        st.markdown(f"""Örneklemin 2018 parti tercihi dağılımı ile popülasyon arasındaki korelasyon {round(corr_party,2)} olduğu için ağırlıklar **{'tutarlı' if  0.8 < corr_party else "tutarsız"}** olarak değerlendirilmiştir.""", unsafe_allow_html=True)
+            corr_age = df['age_prct'].corr(df['age_weight'])
+
+            st.markdown(f"""Örneklemin yaş dağılımı ile popülasyon yaş dağılımı arasındaki korelasyon {round(corr_age,2)} olduğu için ağırlıklar **{'tutarlı' if  0.8 < corr_age  else "tutarsız"}** olarak değerlendirilmiştir.""", unsafe_allow_html=True)
+
+
+            st.markdown("""---""")
+
+            party_dist_w = df.pivot_table(values='Duzeltilmis_Agirlik',
+                        index='2018_party',
+                        aggfunc=np.sum,
+                        fill_value=0,
+                        margins=True,
+                        margins_name='Genel Toplam')
+
+            # party_dist_p = round(party_dist_w*100/party_dist_w.iloc[-1,:],2).astype(str) + "%"
+            party_dist_p = party_dist_w/party_dist_w.iloc[-1,:]
+            party_dist_p= party_dist_p.drop(party_dist_p.tail(1).index)
+            #sex_dist = pd.concat([sex_dist_w,sex_dist_p], axis=1,ignore_index=True)
+            
+            st.subheader("**2018'de Tercih Edilen Parti Dağılımı**")
+
+            st.bar_chart(party_dist_p)
+
+            corr_party = df['party_prct'].corr(df['party_weight'])
+
+            st.markdown(f"""Örneklemin 2018 parti tercihi dağılımı ile popülasyon arasındaki korelasyon {round(corr_party,2)} olduğu için ağırlıklar **{'tutarlı' if  0.8 < corr_party else "tutarsız"}** olarak değerlendirilmiştir.""", unsafe_allow_html=True)
 
 
         
@@ -339,84 +340,97 @@ def cs_main_calc():
         mime='text/csv')
 
         st.title('Tablo Oluşturma')
+        with st.expander("""Kaç soru sorulduğunu nasıl hesaplarım?"""):
+            st.write(f"""
+            - Raw datada "Koronavirüs konusunda ne kadar endişelisiniz?" sorusunu dahil ederek sağa doğru tüm kolonları sayın. 
+            - Toplam kolon sayısını kutucuğa yazın.
+            
+            Not: Bu sorunun sorulma sebebi uygulamanın harcadığı ilk eforu minimize etmektir. Default soru sayısı 10'dur.""",unsafe_allow_html=True)
+        
 
-        user_input = st.text_input("Soruyu kopyalayıp buraya yapıştırın.")
+        user_input = st.number_input("Kaç soru soruldu?", min_value=10, max_value=500,step=1)
 
         if user_input is not '':
 
-            genel = df.pivot_table(values='Duzeltilmis_Agirlik',
-                    index=user_input,
-                    aggfunc=np.sum,
-                    fill_value=0,
-                    margins=True,
-                    margins_name='Genel Toplam')
+          for x in range(25,int(user_input + 25)):   
 
-            genel_p = round(genel*100/genel.iloc[-1,:],1).astype(str) + "%"
+            with st.expander(f"Soru {x-24} : {df_temp.columns[x]}"):
 
-            st.markdown("**Genel Dağılım**")
-            st.table(genel_p)
-            
-            cinsiyet = df.pivot_table(values='Duzeltilmis_Agirlik',
-                    index=user_input,
-                    columns='sex',
-                    aggfunc=np.sum,
-                    fill_value=0,
-                    margins=True,
-                    margins_name='Genel Toplam')
 
-            cinsiyet_p = round(cinsiyet*100/cinsiyet.iloc[-1,:],1).astype(str) + "%"
+                genel = df_temp.pivot_table(values='Duzeltilmis_Agirlik',
+                        index=df_temp.columns[x],
+                        aggfunc=np.sum,
+                        fill_value=0,
+                        margins=True,
+                        margins_name='Genel Toplam')
 
-            st.markdown("**Cinsiyet Dağılımı**")
-            st.table(cinsiyet_p)
+                genel_p = round(genel*100/genel.iloc[-1,:],1).astype(str) + "%"
+                
+                st.markdown(f"**Genel Dağılım {x-24}- Soru: {df_temp.columns[x]}**", unsafe_allow_html=True)
+                st.table(genel_p)
 
-            yas = df.pivot_table(values='Duzeltilmis_Agirlik',
-                    index=user_input,
-                    columns='age',
-                    aggfunc=np.sum,
-                    fill_value=0,
-                    margins=True,
-                    margins_name='Genel Toplam')
+                cinsiyet = df_temp.pivot_table(values='Duzeltilmis_Agirlik',
+                        index=df_temp.columns[x],
+                        columns='sex',
+                        aggfunc=np.sum,
+                        fill_value=0,
+                        margins=True,
+                        margins_name='Genel Toplam')
 
-            yas_p = round(yas*100/yas.iloc[-1,:],1).astype(str) + "%"
+                cinsiyet_p = round(cinsiyet*100/cinsiyet.iloc[-1,:],1).astype(str) + "%"
 
-            st.markdown("**Yaş Dağılımı**")
-            st.table(yas_p)
+                st.markdown("**Cinsiyet Dağılımı**")
+                st.table(cinsiyet_p)
 
-            parti = round(df[(df['2018_party'] == 'Adalet ve Kalkınma Partisi (AKP)') + (df['2018_party'] == 'Cumhuriyet Halk Partisi (CHP)')+ (df['2018_party'] == 'Halkların Demokratik Partisi (HDP)')+ (df['2018_party'] == 'İYİ Parti')+ (df['2018_party'] == 'Milliyetçi Hareket Partisi (MHP)')].pivot_table(values='Duzeltilmis_Agirlik',
-                    index=user_input,
-                    columns='2018_party',
-                    aggfunc=np.sum,
-                    fill_value=0,
-                    margins=True,
-                    margins_name='Genel Toplam'),2)
+                yas = df_temp.pivot_table(values='Duzeltilmis_Agirlik',
+                        index=df_temp.columns[x],
+                        columns='age',
+                        aggfunc=np.sum,
+                        fill_value=0,
+                        margins=True,
+                        margins_name='Genel Toplam')
 
-            parti_p = round(parti*100/parti.iloc[-1,:],1).astype(str) + "%"
+                yas_p = round(yas*100/yas.iloc[-1,:],1).astype(str) + "%"
 
-            st.markdown("**Parti Dağılımı**")
-            st.table(parti_p)
-            
-            egitim = df.pivot_table(values='Duzeltilmis_Agirlik',
-                    index=user_input,
-                    columns='educ_real',
-                    aggfunc=np.sum,
-                    fill_value=0,
-                    margins=True,
-                    margins_name='Genel Toplam')
+                st.markdown("**Yaş Dağılımı**")
+                st.table(yas_p)
 
-            egitim_p = round(egitim*100/egitim.iloc[-1,:],1).astype(str) + "%"
+                parti = round(df_temp[(df_temp['2018_party'] == 'Adalet ve Kalkınma Partisi (AKP)') + (df_temp['2018_party'] == 'Cumhuriyet Halk Partisi (CHP)')+ (df_temp['2018_party'] == 'Halkların Demokratik Partisi (HDP)')+ (df_temp['2018_party'] == 'İYİ Parti')+ (df_temp['2018_party'] == 'Milliyetçi Hareket Partisi (MHP)')].pivot_table(values='Duzeltilmis_Agirlik',
+                        index=df_temp.columns[x],
+                        columns='2018_party',
+                        aggfunc=np.sum,
+                        fill_value=0,
+                        margins=True,
+                        margins_name='Genel Toplam'),2)
 
-            egitim_list = ['İlköğretim veya daha az','Ortaokul','Lise','Üniversite veya daha fazla']
+                parti_p = round(parti*100/parti.iloc[-1,:],1).astype(str) + "%"
 
-            egitim_p = egitim_p.reindex(egitim_list,axis=1)
+                st.markdown("**Parti Dağılımı**")
+                st.table(parti_p)
+                
+                egitim = df_temp.pivot_table(values='Duzeltilmis_Agirlik',
+                        index=df_temp.columns[x],
+                        columns='educ_real',
+                        aggfunc=np.sum,
+                        fill_value=0,
+                        margins=True,
+                        margins_name='Genel Toplam')
 
-            st.markdown("**Eğitim Dağılımı**")
-            st.table(egitim_p)
+                egitim_p = round(egitim*100/egitim.iloc[-1,:],1).astype(str) + "%"
+
+                egitim_list = ['İlköğretim veya daha az','Ortaokul','Lise','Üniversite veya daha fazla']
+
+                egitim_p = egitim_p.reindex(egitim_list,axis=1)
+
+                st.markdown("**Eğitim Dağılımı**")
+                st.table(egitim_p)
 
         else:
 
             st.write('Excel dosyasında bulunan sorulardan incelemek istediğinizi kopyalayıp yapıştırınız')
 
-    
+
+
 
 
     else:

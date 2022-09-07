@@ -5,8 +5,6 @@ import pandas as pd
 import numpy as np
 import base64
 
-from streamlit.uploaded_file_manager import UploadedFile
-
 st.set_page_config(layout='wide')
 
 # #Menü gizleme
